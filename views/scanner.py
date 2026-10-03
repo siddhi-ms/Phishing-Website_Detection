@@ -3,6 +3,7 @@ import streamlit as st
 
 from src.predict import predict_website
 from utils.feature_extractor import extract_features
+from utils.fetcher import FetchError, analyze_live_page
 from utils.insights import security_score
 from utils.parser import validate_url
 from utils.state import go, save_scan, set_example
@@ -21,9 +22,21 @@ def analyze():
     if error:
         st.error(error)
         return
-    with st.spinner("Extracting URL features and running the neural network..."):
+    deep = st.session_state.get("deep_scan", False)
+    fetch_warning = None
+
+    with st.spinner("Analyzing the website - this may take a few seconds..." if deep else
+                     "Extracting URL features and running the neural network..."):
+        live_page = None
+        if deep:
+            try:
+                live_page = analyze_live_page(raw)
+            except FetchError as exc:
+                fetch_warning = str(exc)
+            except Exception as exc:  # unexpected failure - degrade gracefully
+                fetch_warning = f"Unexpected error while fetching the page: {exc}"
         try:
-            features, parsed, signals = extract_features(raw)
+            features, parsed, signals = extract_features(raw, live_page=live_page)
             result = predict_website(features)
         except FileNotFoundError:
             st.error("The trained model was not found. Run `python src/train.py` first, then try again.")
@@ -31,6 +44,8 @@ def analyze():
         except Exception as exc:  # keep the UI alive on any unexpected error
             st.error(f"Could not analyse this URL: {exc}")
             return
+
+    signals["fetch_warning"] = fetch_warning
     save_scan({"url": parsed["url"], "features": features, "parsed": parsed, "signals": signals,
                "result": result, "security_score": security_score(result)})
     go("Security Report")
@@ -40,6 +55,14 @@ def analyze():
 def render():
     page_header("URL Scanner", "Enter a website address. Features are extracted from the URL automatically.")
     st.text_input("Website URL", key="url_input", placeholder="https://example.com", label_visibility="collapsed")
+    st.checkbox(
+        "Also fetch the live page to check its external links (optional)",
+        key="deep_scan", value=False,
+        help="Without this, the external-links feature uses a neutral default and only the URL text "
+             "is analysed - nothing is downloaded. With this on, the app makes a real network request "
+             "to the address and reads its HTML to count links to other domains. Only enable this for "
+             "sites you're comfortable having your computer connect to; it is skipped automatically if "
+             "the request fails, times out, or the page isn't HTML.")
     if st.button("Analyze Website", type="primary", key="analyze_btn"):
         analyze()
     st.caption("Tip: include http:// or https://. If you leave it out, http:// is assumed.")
@@ -60,7 +83,9 @@ def render():
         card("HTTPS and sensitive words", "No encryption, or words like login/secure/account.", "", "red"),
         card("Path depth", "Number of '/' levels after the domain.", "", "amber"),
     ]))
-    md(card("Not scanned: external links",
-            "The model also uses the share of links pointing to other domains. That needs the page's HTML, "
-            "and this project does not fetch pages, so a neutral default value is used for that one feature.",
+    md(card("External links (optional deep scan)",
+            "The model also uses the share of links pointing to other domains. By default a neutral value is "
+            "used so nothing is downloaded. Tick the checkbox above to fetch the real page and measure this "
+            "properly - useful when you want the most accurate result, but it does mean your computer connects "
+            "to that address.",
             "", "blue"))

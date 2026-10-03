@@ -17,23 +17,23 @@ def render():
     then explains the result with a risk meter, a security score and clear advice.</p></div>""")
     st.button("Scan Website", type="primary", key="hero_scan", on_click=go, args=("URL Scanner",))
 
-    # section("Model overview")
-    # size = f"{stats['rows']:,}" if stats else "-"
-    # size_sub = (f"{stats['phishing']:,} phishing, {stats['legit']:,} legitimate" if stats
-    #             else "dataset/phishing.csv not found")
-    # acc = f"{metrics['accuracy'] * 100:.1f}%" if metrics else "-"
-    # acc_sub = "on the 20% test split" if metrics else "run src/train.py to see"
-    # md(grid([
-    #     stat_card("", "Model", "ANN", "12 - 16 - 8 - 1 - ReLU / Sigmoid", "blue"),
-    #     stat_card("", "Input features", "12", "URL and host characteristics", "green"),
-    #     stat_card("", "Dataset size", size, size_sub, "purple"),
-    #     stat_card("", "Test accuracy", acc, acc_sub, "amber"),
-    # ]))
-    # if not ready:
-    #     md(card("Model not trained yet",
-    #             "Run <span class='pg-code'>python src/train.py</span> once to create the model and scaler. "
-    #             "Scanning needs <span class='pg-code'>phishing_ann.keras</span> and <span class='pg-code'>scaler.pkl</span>.",
-    #             "", "amber"))
+    section("Model overview")
+    size = f"{stats['rows']:,}" if stats else "-"
+    size_sub = (f"{stats['phishing']:,} phishing, {stats['legit']:,} legitimate" if stats
+                else "dataset/phishing.csv not found")
+    acc = f"{metrics['accuracy'] * 100:.1f}%" if metrics else "-"
+    acc_sub = "on the 20% test split" if metrics else "run src/train.py to see"
+    md(grid([
+        stat_card("", "Model", "ANN", "12 - 16 - 8 - 1 - ReLU / Sigmoid", "blue"),
+        stat_card("", "Input features", "12", "URL and host characteristics", "green"),
+        stat_card("", "Dataset size", size, size_sub, "purple"),
+        stat_card("", "Test accuracy", acc, acc_sub, "amber"),
+    ]))
+    if not ready:
+        md(card("Model not trained yet",
+                "Run <span class='pg-code'>python src/train.py</span> once to create the model and scaler. "
+                "Scanning needs <span class='pg-code'>phishing_ann.keras</span> and <span class='pg-code'>scaler.pkl</span>.",
+                "", "amber"))
 
     section("How it works")
     md(grid([

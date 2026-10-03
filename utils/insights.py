@@ -15,6 +15,9 @@ CHECK_TEXT = {
     "NumNumericChars": ("Digits in URL", lambda v: f"{v} - normal", lambda v: f"{v} - many digits"),
     "NumSensitiveWords": ("Sensitive words", lambda v: "None (login, secure, account...)", lambda v: f"{v} found (login, secure, account...)"),
     "HostnameLength": ("Host name length", lambda v: f"{v} characters - normal", lambda v: f"{v} characters - unusually long"),
+    "PctExtHyperlinks": ("External links on the page",
+                        lambda v: f"{v * 100:.0f}% of links point elsewhere - normal",
+                        lambda v: f"{v * 100:.0f}% of links point to other domains"),
 }
 
 

@@ -16,11 +16,24 @@ SHORTENERS = {
 NOT_EXTRACTED = ["PctExtHyperlinks"]
 
 
-def extract_features(raw_url):
-    """Return (features_dict, parsed_url, signals). features_dict has the 12 model inputs."""
+def extract_features(raw_url, live_page=None):
+    """Return (features_dict, parsed_url, signals). features_dict has the 12 model inputs.
+
+    live_page: optional (pct_external, external_count, total_links, final_url) from
+    utils.fetcher.analyze_live_page(). When given, PctExtHyperlinks uses the real
+    value measured on the fetched page instead of the neutral default.
+    """
     url, scheme_assumed = normalize_url(raw_url)
     p = parse_url(url)
     low = url.lower()
+
+    if live_page is not None:
+        pct_ext, ext_count, total_links, _ = live_page
+        not_extracted = []
+    else:
+        pct_ext = FEATURE_INFO["PctExtHyperlinks"]["default"]
+        ext_count = total_links = None
+        not_extracted = NOT_EXTRACTED
 
     features = {
         "NumDots": url.count("."),
@@ -34,13 +47,16 @@ def extract_features(raw_url):
         "IpAddress": int(p["is_ip"]),
         "NumSensitiveWords": sum(low.count(w) for w in SENSITIVE_WORDS),
         "HostnameLength": len(p["hostname"]),
-        "PctExtHyperlinks": FEATURE_INFO["PctExtHyperlinks"]["default"],
+        "PctExtHyperlinks": pct_ext,
     }
     features = {name: features[name] for name in FEATURES}  # keep the training order
 
     signals = {
         "scheme_assumed": scheme_assumed,
         "shortener": p["hostname"] in SHORTENERS or p["domain"] in SHORTENERS,
-        "not_extracted": NOT_EXTRACTED,
+        "not_extracted": not_extracted,
+        "live_page": live_page is not None,
+        "external_links": ext_count,
+        "total_links": total_links,
     }
     return features, p, signals

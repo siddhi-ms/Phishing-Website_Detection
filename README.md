@@ -84,6 +84,8 @@ The UI only *uses* the trained `phishing_ann.keras`, `scaler.pkl` and `predict_w
 `utils/feature_extractor.py` builds the same 12 features from the URL string. `PctExtHyperlinks` needs the page's HTML (no scraping in this project), so the existing default value (0.1) is used for it.
 Security score = 100 − risk score. Feature importance is computed on demand (permutation importance on the 20% test split).
 
+The URL Scanner has an optional **deep scan** checkbox. Off (default), nothing is downloaded and `PctExtHyperlinks` uses the neutral default. On, `utils/fetcher.py` makes a real HTTP GET to the address (6s timeout, ~2MB cap, HTML only), parses the links with BeautifulSoup, and computes the real share of links pointing to other domains. It never retrains the model or changes the other 11 features. If the fetch fails for any reason (timeout, blocked, DNS failure, non-HTML response), it falls back to the neutral default automatically and shows why on the Security Report page.
+
 ## Screenshots (placeholders)
 | Page | Screenshot |
 |---|---|

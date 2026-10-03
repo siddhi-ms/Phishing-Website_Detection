@@ -45,5 +45,8 @@ def render():
 
     section("Limitations")
     md(card("Read this before trusting a result",
-            "The scanner analyses only the URL text. It does not open the page, so the external-link feature uses a neutral "
-            "default. Treat the result as decision support, not a guarantee.", "", "amber"))
+            "By default the scanner analyses only the URL text and never downloads anything, so the external-link "
+            "feature uses a neutral default. The URL Scanner page has an optional checkbox to fetch the live page "
+            "and measure that feature for real - useful for accuracy, but it does mean your computer makes a real "
+            "network request to the address, which only makes sense for sites you're comfortable connecting to. "
+            "Either way, treat the result as decision support, not a guarantee.", "", "amber"))

@@ -21,6 +21,16 @@ def render():
        f'{"Legitimate Website" if safe else "Phishing Website Detected"}</div>'
        f'<div class="pg-url">{esc(scan["url"])}</div></div></div>')
 
+    if sig.get("fetch_warning"):
+        md(card("Live page could not be fetched",
+                f"{esc(sig['fetch_warning'])} The external-links feature fell back to its neutral default; "
+                "every other feature still came from the URL text as usual.", "", "amber"))
+    elif sig.get("live_page"):
+        md(card("Live page fetched",
+                f"Read the page's HTML: {sig['external_links']} of {sig['total_links']} links "
+                "point to other domains. This measured value was used instead of the neutral default.",
+                "", "green"))
+
     left, mid, right = st.columns([1.2, 1, 1.4])
     with left:
         md(f'<div class="pg-card"><div class="pg-stat-label">Confidence</div>'
